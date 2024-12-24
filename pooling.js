@@ -3,9 +3,6 @@ const cors = require('cors');
 const app = express();
 const port = 3000;
 
-const dataFile = 'data.json';
-
-// Lê o arquivo existente ou o recém-criado
 let data = [];
 
 app.use(cors());

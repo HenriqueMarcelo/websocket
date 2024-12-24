@@ -80,7 +80,7 @@
       border-radius: 5px;
     }
 
-    textarea {
+    .text {
       flex-grow: 1;
       padding: 5px;
       border: 1px solid #ccc;
@@ -113,12 +113,12 @@
     </div>
   </div>
 
-  <div class="input-container">
+  <form class="input-container" id="form">
     <input type="text" id="username" placeholder="Digite seu nome">
     <input type="color" id="color" value="#ff0000">
-    <textarea id="message" placeholder="Digite sua mensagem..."></textarea>
+    <input id="message" class="text" placeholder="Digite sua mensagem..." />
     <button id="send">Enviar</button>
-  </div>
+  </form>
 
   <!-- <div class="games-container">
     <div class="game" id="game1">
@@ -205,6 +205,7 @@
     const color = document.getElementById('color');
     const message = document.getElementById('message');
     const send = document.getElementById('send');
+    const form = document.getElementById('form');
 
     const dataFromLocalStorage = window.localStorage.getItem('data');
     if (dataFromLocalStorage) {
@@ -228,7 +229,8 @@
         .catch(error => console.error(error));
     }
 
-    send.addEventListener('click', () => {
+    form.addEventListener('submit', (event) => {
+      event.preventDefault();
       const messageId = Math.floor(Math.random() * 10 ** 16);
 
       const data = {
@@ -240,9 +242,9 @@
       };
 
       window.localStorage.setItem('data', JSON.stringify(data));
-
+      message.value = '';
       sendThroughPolling(data);
-    });
+    }, true);
   </script>
 
   <script>

@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Comparação: WebSocket vs Request Polling</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-bottom: 5rem;
+    }
+    
+    * {
+      box-sizing: border-box;
+
+    }
+
+    .games-container {
+      display: flex;
+      justify-content: space-between;
+      margin: 20px 0;
+      width: 90%;
+    }
+
+    .game {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 45%;
+    }
+
+    canvas {
+      border: 1px solid #000;
+      background-color: #f0f0f0;
+    }
+
+    .chat-container {
+      display: flex;
+      justify-content: space-between;
+      margin: 20px 0;
+      width: 90%;
+    }
+
+    .chat {
+      display: flex;
+      flex-direction: column;
+      width: 45%;
+      align-items: center;
+    }
+
+    .messages {
+      border: 1px solid #000;
+      background-color: #f9f9f9;
+      height: 200px;
+      overflow-y: auto;
+      padding: 10px;
+      width: 400px;
+    }
+
+    .input-container {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      position: fixed;
+      bottom: 0;
+      width: 100%;
+      background: white;
+      box-shadow: 0 -4px 6px rgba(0, 0, 0, 0.1);
+      padding: 1rem;
+    }
+
+    input[type="text"], input[type="color"] {
+      padding: 5px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+
+    textarea {
+      flex-grow: 1;
+      padding: 5px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+
+    button {
+      padding: 5px 10px;
+      border: none;
+      background-color: #007bff;
+      color: white;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+  </style>
+</head>
+<body>
+  <div class="games-container">
+    <div class="game" id="game1">
+      <h2>Jogo 1 (WebSocket)</h2>
+      <canvas id="canvas1" width="400" height="400"></canvas>
+    </div>
+    <div class="game" id="game2">
+      <h2>Jogo 2 (Request Polling)</h2>
+      <canvas id="canvas2" width="400" height="400"></canvas>
+    </div>
+  </div>
+
+  <div class="chat-container">
+    <div class="chat" id="chat1">
+      <h2>Chat 1 (WebSocket)</h2>
+      <div class="messages" id="messages1"></div>
+    </div>
+    <div class="chat" id="chat2">
+      <h2>Chat 2 (Request Polling)</h2>
+      <div class="messages" id="messages2"></div>
+    </div>
+  </div>
+
+  <div class="input-container">
+    <input type="text" id="username" placeholder="Digite seu nome">
+    <input type="color" id="color" value="#ff0000">
+    <textarea id="message" placeholder="Digite sua mensagem..."></textarea>
+    <button id="send">Enviar</button>
+  </div>
+
+  <script>
+    // Simular dados no canvas
+    function drawCircles(canvasId, circles) {
+      const canvas = document.getElementById(canvasId);
+      const ctx = canvas.getContext('2d');
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      circles.forEach(circle => {
+        ctx.beginPath();
+        ctx.arc(circle.x, circle.y, circle.radius, 0, Math.PI * 2);
+        ctx.fillStyle = circle.color;
+        ctx.fill();
+        ctx.closePath();
+      });
+    }
+
+    const circlesGame1 = [
+      { x: 50, y: 50, radius: 20, color: '#ff0000' },
+      { x: 150, y: 100, radius: 30, color: '#00ff00' },
+      { x: 250, y: 200, radius: 25, color: '#0000ff' }
+    ];
+
+    const circlesGame2 = [
+      { x: 60, y: 60, radius: 15, color: '#ff8800' },
+      { x: 160, y: 120, radius: 20, color: '#88ff00' },
+      { x: 300, y: 180, radius: 35, color: '#0088ff' }
+    ];
+
+    drawCircles('canvas1', circlesGame1);
+    drawCircles('canvas2', circlesGame2);
+
+    // Simular mensagens no chat
+    const messagesGame1 = [
+      { username: 'Alice', color: '#ff0000', text: 'Olá, pessoal!' },
+      { username: 'Bob', color: '#00ff00', text: 'Oi, Alice!' }
+    ];
+
+    const messagesGame2 = [
+      { username: 'Carol', color: '#0000ff', text: 'Bom dia!' },
+      { username: 'Dave', color: '#ff8800', text: 'Bom dia, Carol!' }
+    ];
+
+    function renderMessages(containerId, messages) {
+      const container = document.getElementById(containerId);
+      container.innerHTML = '';
+      messages.forEach(message => {
+        const messageElement = document.createElement('div');
+        messageElement.style.color = message.color;
+        messageElement.textContent = `${message.username}: ${message.text}`;
+        container.appendChild(messageElement);
+      });
+    }
+
+    renderMessages('messages1', messagesGame1);
+    renderMessages('messages2', messagesGame2);
+  </script>
+
+</body>
+</html>

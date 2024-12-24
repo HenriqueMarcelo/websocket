@@ -12,7 +12,8 @@ if (!fs.existsSync(dataFile)) {
 }
 
 // Lê o arquivo existente ou o recém-criado
-let data = JSON.parse(fs.readFileSync(dataFile));
+// let data = JSON.parse(fs.readFileSync(dataFile));
+let data = [];
 
 app.use(cors());
 
@@ -25,7 +26,7 @@ app.post('/send', (req, res) => {
   data.push(req.body);
 
   // Grava o novo estado dos dados no arquivo
-  fs.writeFileSync(dataFile, JSON.stringify(data));
+  // fs.writeFileSync(dataFile, JSON.stringify(data));
 
   res.sendStatus(200);
 });

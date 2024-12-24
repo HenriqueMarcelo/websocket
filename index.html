@@ -120,7 +120,7 @@
     <button id="send">Enviar</button>
   </div>
 
-  <div class="games-container">
+  <!-- <div class="games-container">
     <div class="game" id="game1">
       <h2>Jogo 1 (WebSocket)</h2>
       <canvas id="canvas1" width="400" height="400"></canvas>
@@ -129,36 +129,36 @@
       <h2>Jogo 2 (Request Polling)</h2>
       <canvas id="canvas2" width="400" height="400"></canvas>
     </div>
-  </div>
+  </div> -->
 
   <script>
     const messagesGame1 = [];
     const messagesGame2 = [];
-    const circlesGame1 = [
-      { x: 50, y: 50, radius: 20, color: '#ff0000' },
-      { x: 150, y: 100, radius: 30, color: '#00ff00' },
-      { x: 250, y: 200, radius: 25, color: '#0000ff' }
-    ];
-    const circlesGame2 = [
-      { x: 60, y: 60, radius: 15, color: '#ff8800' },
-      { x: 160, y: 120, radius: 20, color: '#88ff00' },
-      { x: 300, y: 180, radius: 35, color: '#0088ff' }
-    ];
+    // const circlesGame1 = [
+    //   { x: 50, y: 50, radius: 20, color: '#ff0000' },
+    //   { x: 150, y: 100, radius: 30, color: '#00ff00' },
+    //   { x: 250, y: 200, radius: 25, color: '#0000ff' }
+    // ];
+    // const circlesGame2 = [
+    //   { x: 60, y: 60, radius: 15, color: '#ff8800' },
+    //   { x: 160, y: 120, radius: 20, color: '#88ff00' },
+    //   { x: 300, y: 180, radius: 35, color: '#0088ff' }
+    // ];
 
     // Simular dados no canvas
-    function drawCircles(canvasId, circles) {
-      const canvas = document.getElementById(canvasId);
-      const ctx = canvas.getContext('2d');
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    // function drawCircles(canvasId, circles) {
+    //   const canvas = document.getElementById(canvasId);
+    //   const ctx = canvas.getContext('2d');
+    //   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      circles.forEach(circle => {
-        ctx.beginPath();
-        ctx.arc(circle.x, circle.y, circle.radius, 0, Math.PI * 2);
-        ctx.fillStyle = circle.color;
-        ctx.fill();
-        ctx.closePath();
-      });
-    }
+    //   circles.forEach(circle => {
+    //     ctx.beginPath();
+    //     ctx.arc(circle.x, circle.y, circle.radius, 0, Math.PI * 2);
+    //     ctx.fillStyle = circle.color;
+    //     ctx.fill();
+    //     ctx.closePath();
+    //   });
+    // }
 
     function removeDuplicateMessages(messages) {
       const messageIds = new Set();
@@ -176,10 +176,8 @@
       messages.push(...uniqueMessages);
     }
 
-    drawCircles('canvas1', circlesGame1);
-    drawCircles('canvas2', circlesGame2);
-
-  
+    // drawCircles('canvas1', circlesGame1);
+    // drawCircles('canvas2', circlesGame2);
 
     function renderMessages(containerId, messages) {
       const container = document.getElementById(containerId);
@@ -188,6 +186,9 @@
         const messageElement = document.createElement('div');
         messageElement.style.color = message.color;
         messageElement.textContent = `${message.username}: ${message.text}`;
+        if(message.userId == userId) {
+          messageElement.style.textAlign = 'right';
+        }
         container.appendChild(messageElement);
       });
     }

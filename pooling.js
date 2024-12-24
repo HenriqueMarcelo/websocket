@@ -15,7 +15,7 @@ app.post('/send', (req, res) => {
   // Adiciona a nova mensagem ao array de dados
   data.push(req.body);
 
-  res.sendStatus(200);
+  res.sendStatus(201);
 });
 
 // Endpoint para simular a consulta ao pool (retorna todos os dados)

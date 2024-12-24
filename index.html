@@ -120,7 +120,7 @@
     <button id="send">Enviar</button>
   </form>
 
-  <!-- <div class="games-container">
+  <div class="games-container">
     <div class="game" id="game1">
       <h2>Jogo 1 (WebSocket)</h2>
       <canvas id="canvas1" width="400" height="400"></canvas>
@@ -129,36 +129,94 @@
       <h2>Jogo 2 (Request Polling)</h2>
       <canvas id="canvas2" width="400" height="400"></canvas>
     </div>
-  </div> -->
+  </div>
+
+  <script>
+    const circle = {
+        x: 200,  // Posição inicial no eixo X
+        y: 200,  // Posição inicial no eixo Y
+        radius: 20,  // Raio do círculo
+    };
+
+    let keysPressed = {};
+
+    function moveCircle() {
+      // Mover para a esquerda
+      if (keysPressed['ArrowLeft']) {
+        circle.x -= 5;
+      }
+      // Mover para a direita
+      if (keysPressed['ArrowRight']) {
+        circle.x += 5;
+      }
+      // Mover para cima
+      if (keysPressed['ArrowUp']) {
+        circle.y -= 5;
+      }
+      // Mover para baixo
+      if (keysPressed['ArrowDown']) {
+        circle.y += 5;
+      }
+
+      // Garantir que o círculo não ultrapasse os limites do canvas
+      if (circle.x - circle.radius < 0) circle.x = circle.radius;
+      if (circle.x + circle.radius > 400) circle.x = 400 - circle.radius;
+      if (circle.y - circle.radius < 0) circle.y = circle.radius;
+      if (circle.y + circle.radius > 400) circle.y = 400 - circle.radius;
+
+      const data = {
+        username: username.value,
+        color: color.value,
+        userId: userId,
+        messageId: Math.floor(Math.random() * 10 ** 16),
+        time: + new Date(),
+        ...circle
+      };
+
+      sendThroughPolling(data);
+      sendThroughtWebSocket(data);
+    }
+
+    // Capturar as teclas pressionadas
+    window.addEventListener('keydown', (event) => {
+      keysPressed[event.key] = true;
+      moveCircle();
+    });
+
+    // Capturar quando as teclas são soltas
+    window.addEventListener('keyup', (event) => {
+      delete keysPressed[event.key];
+    });
+  </script>
 
   <script>
     const messagesGame1 = [];
     const messagesGame2 = [];
-    // const circlesGame1 = [
-    //   { x: 50, y: 50, radius: 20, color: '#ff0000' },
-    //   { x: 150, y: 100, radius: 30, color: '#00ff00' },
-    //   { x: 250, y: 200, radius: 25, color: '#0000ff' }
-    // ];
-    // const circlesGame2 = [
-    //   { x: 60, y: 60, radius: 15, color: '#ff8800' },
-    //   { x: 160, y: 120, radius: 20, color: '#88ff00' },
-    //   { x: 300, y: 180, radius: 35, color: '#0088ff' }
-    // ];
+    const circlesGame1 = [
+      { x: 50, y: 50, radius: 25, color: '#ff0000' },
+      { x: 150, y: 100, radius: 25, color: '#00ff00' },
+      { x: 250, y: 200, radius: 25, color: '#0000ff' }
+    ];
+    const circlesGame2 = [
+      { x: 60, y: 60, radius: 25, color: '#ff8800' },
+      { x: 160, y: 120, radius: 25, color: '#88ff00' },
+      { x: 300, y: 180, radius: 25, color: '#0088ff' }
+    ];
 
     // Simular dados no canvas
-    // function drawCircles(canvasId, circles) {
-    //   const canvas = document.getElementById(canvasId);
-    //   const ctx = canvas.getContext('2d');
-    //   ctx.clearRect(0, 0, canvas.width, canvas.height);
+    function drawCircles(canvasId, circles) {
+      const canvas = document.getElementById(canvasId);
+      const ctx = canvas.getContext('2d');
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    //   circles.forEach(circle => {
-    //     ctx.beginPath();
-    //     ctx.arc(circle.x, circle.y, circle.radius, 0, Math.PI * 2);
-    //     ctx.fillStyle = circle.color;
-    //     ctx.fill();
-    //     ctx.closePath();
-    //   });
-    // }
+      circles.forEach(circle => {
+        ctx.beginPath();
+        ctx.arc(circle.x, circle.y, circle.radius, 0, Math.PI * 2);
+        ctx.fillStyle = circle.color;
+        ctx.fill();
+        ctx.closePath();
+      });
+    }
 
     function removeDuplicateMessages(messages) {
       const messageIds = new Set();
@@ -176,8 +234,14 @@
       messages.push(...uniqueMessages);
     }
 
-    // drawCircles('canvas1', circlesGame1);
-    // drawCircles('canvas2', circlesGame2);
+    var globalID;
+    function loopFunction() {
+      drawCircles('canvas1', circlesGame1);
+      drawCircles('canvas2', circlesGame2);
+      globalID = requestAnimationFrame(loopFunction);
+    }
+    globalID = requestAnimationFrame(loopFunction);
+
 
     function renderMessages(containerId, messages) {
       const container = document.getElementById(containerId);
@@ -198,7 +262,13 @@
   </script>
 
   <script>
-    // Envio de mensagens
+    const socket = new WebSocket('ws://localhost:3001');
+    socket.onopen = () => {
+      console.log('Conectado ao servidor WebSocket');
+    };
+    socket.onclose = () => {
+      console.log('Conexão com o servidor encerrada');
+    };
 
     let userId = Math.floor(Math.random() * 10 ** 16);	    ;
     const username = document.getElementById('username');
@@ -224,9 +294,11 @@
         },
         body: JSON.stringify(data)
       })
-        .then(response => response.json())
-        .then(data => console.log(data))
         .catch(error => console.error(error));
+    }
+
+    function sendThroughtWebSocket(data) {
+      socket.send(JSON.stringify(data));
     }
 
     form.addEventListener('submit', (event) => {
@@ -244,17 +316,11 @@
       window.localStorage.setItem('data', JSON.stringify(data));
       message.value = '';
       sendThroughPolling(data);
+      sendThroughtWebSocket(data);
     }, true);
   </script>
 
   <script>
-    // Pooling de mensagens
-
-    function updateMessagesVariable(messages) {
-      messagesGame2.push(...messages);
-      removeDuplicateMessages(messagesGame2);
-      renderMessages('messages2', messagesGame2);
-    }
 
     // Função para fazer o polling e exibir as mensagens recebidas
     function startPolling() {
@@ -264,10 +330,9 @@
           const messages = await response.json();
 
           if (messages.length > 0) {
-            // Exibe as mensagens recebidas
-            console.log('Novas mensagens:', messages);
             // Aqui você pode atualizar o estado da UI ou fazer outra coisa com as mensagens
-            updateMessagesVariable(messages)
+            messagesGame2.push(...messages.filter(message => message.text));
+            removeDuplicateMessages(messagesGame2);
             renderMessages('messages2', messagesGame2);
 
           } else {
@@ -284,7 +349,17 @@
     // Inicia o polling quando o script for executado
     startPolling();
 
+    socket.onmessage = (event) => {
+      const messages = JSON.parse(event.data);
+      
+      messagesGame1.push(...messages.filter(message => message.text));
+      removeDuplicateMessages(messagesGame1);
+      renderMessages('messages1', messagesGame1);
+    };
+
   </script>
+
+
 
 </body>
 </html>

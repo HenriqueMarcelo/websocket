@@ -102,17 +102,6 @@
   </style>
 </head>
 <body>
-  <div class="games-container">
-    <div class="game" id="game1">
-      <h2>Jogo 1 (WebSocket)</h2>
-      <canvas id="canvas1" width="400" height="400"></canvas>
-    </div>
-    <div class="game" id="game2">
-      <h2>Jogo 2 (Request Polling)</h2>
-      <canvas id="canvas2" width="400" height="400"></canvas>
-    </div>
-  </div>
-
   <div class="chat-container">
     <div class="chat" id="chat1">
       <h2>Chat 1 (WebSocket)</h2>
@@ -131,7 +120,31 @@
     <button id="send">Enviar</button>
   </div>
 
+  <div class="games-container">
+    <div class="game" id="game1">
+      <h2>Jogo 1 (WebSocket)</h2>
+      <canvas id="canvas1" width="400" height="400"></canvas>
+    </div>
+    <div class="game" id="game2">
+      <h2>Jogo 2 (Request Polling)</h2>
+      <canvas id="canvas2" width="400" height="400"></canvas>
+    </div>
+  </div>
+
   <script>
+    const messagesGame1 = [];
+    const messagesGame2 = [];
+    const circlesGame1 = [
+      { x: 50, y: 50, radius: 20, color: '#ff0000' },
+      { x: 150, y: 100, radius: 30, color: '#00ff00' },
+      { x: 250, y: 200, radius: 25, color: '#0000ff' }
+    ];
+    const circlesGame2 = [
+      { x: 60, y: 60, radius: 15, color: '#ff8800' },
+      { x: 160, y: 120, radius: 20, color: '#88ff00' },
+      { x: 300, y: 180, radius: 35, color: '#0088ff' }
+    ];
+
     // Simular dados no canvas
     function drawCircles(canvasId, circles) {
       const canvas = document.getElementById(canvasId);
@@ -147,31 +160,26 @@
       });
     }
 
-    const circlesGame1 = [
-      { x: 50, y: 50, radius: 20, color: '#ff0000' },
-      { x: 150, y: 100, radius: 30, color: '#00ff00' },
-      { x: 250, y: 200, radius: 25, color: '#0000ff' }
-    ];
+    function removeDuplicateMessages(messages) {
+      const messageIds = new Set();
+      const uniqueMessages = messages.filter(message => {
+        if (messageIds.has(message.messageId)) {
+          return false;
+        } else {
+          messageIds.add(message.messageId);
+          return true;
+        }
+      });
 
-    const circlesGame2 = [
-      { x: 60, y: 60, radius: 15, color: '#ff8800' },
-      { x: 160, y: 120, radius: 20, color: '#88ff00' },
-      { x: 300, y: 180, radius: 35, color: '#0088ff' }
-    ];
+      // Limpa o array original e adiciona os elementos únicos
+      messages.length = 0;
+      messages.push(...uniqueMessages);
+    }
 
     drawCircles('canvas1', circlesGame1);
     drawCircles('canvas2', circlesGame2);
 
-    // Simular mensagens no chat
-    const messagesGame1 = [
-      { username: 'Alice', color: '#ff0000', text: 'Olá, pessoal!' },
-      { username: 'Bob', color: '#00ff00', text: 'Oi, Alice!' }
-    ];
-
-    const messagesGame2 = [
-      { username: 'Carol', color: '#0000ff', text: 'Bom dia!' },
-      { username: 'Dave', color: '#ff8800', text: 'Bom dia, Carol!' }
-    ];
+  
 
     function renderMessages(containerId, messages) {
       const container = document.getElementById(containerId);
@@ -186,6 +194,83 @@
 
     renderMessages('messages1', messagesGame1);
     renderMessages('messages2', messagesGame2);
+  </script>
+
+  <script>
+    // Envio de mensagens
+
+    const userId = Math.floor(Math.random() * 10 ** 16);	    ;
+    const username = document.getElementById('username');
+    const color = document.getElementById('color');
+    const message = document.getElementById('message');
+    const send = document.getElementById('send');
+    
+    // Conection Polling
+    function sendThroughPolling(data) {
+      fetch('http://localhost:3000/send', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+      })
+        .then(response => response.json())
+        .then(data => console.log(data))
+        .catch(error => console.error(error));
+    }
+
+    send.addEventListener('click', () => {
+      const messageId = Math.floor(Math.random() * 10 ** 16);
+
+      const data = {
+        username: username.value,
+        color: color.value,
+        text: message.value,
+        userId: userId,
+        messageId: messageId,
+      };
+
+      sendThroughPolling(data);
+    });
+  </script>
+
+  <script>
+    // Pooling de mensagens
+
+    function updateMessagesVariable(messages) {
+      messagesGame2.push(...messages);
+      removeDuplicateMessages(messagesGame2);
+      renderMessages('messages2', messagesGame2);
+    }
+
+    // Função para fazer o polling e exibir as mensagens recebidas
+    function startPolling() {
+      const pollInterval = setInterval(async () => {
+        try {
+          const response = await fetch('http://localhost:3000/poll', { method: 'GET' });
+          const messages = await response.json();
+
+          if (messages.length > 0) {
+            // Exibe as mensagens recebidas
+            console.log('Novas mensagens:', messages);
+            // Aqui você pode atualizar o estado da UI ou fazer outra coisa com as mensagens
+            updateMessagesVariable(messages)
+            renderMessages('messages2', messagesGame2);
+
+          } else {
+            console.log('Nenhuma nova mensagem.');
+          }
+        } catch (error) {
+          console.error('Erro ao realizar polling:', error);
+          // alert("Erro ao realizar polling");
+          // clearInterval(pollInterval);  // Para o polling se houver erro
+        }
+      }, 1000);  // Intervalo de 1 segundo entre as requisições
+    }
+
+    // Inicia o polling quando o script for executado
+    startPolling();
+
   </script>
 
 </body>

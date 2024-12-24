@@ -200,11 +200,19 @@
   <script>
     // Envio de mensagens
 
-    const userId = Math.floor(Math.random() * 10 ** 16);	    ;
+    let userId = Math.floor(Math.random() * 10 ** 16);	    ;
     const username = document.getElementById('username');
     const color = document.getElementById('color');
     const message = document.getElementById('message');
     const send = document.getElementById('send');
+
+    const dataFromLocalStorage = window.localStorage.getItem('data');
+    if (dataFromLocalStorage) {
+      const data = JSON.parse(dataFromLocalStorage);
+      username.value = data.username;
+      color.value = data.color;
+      userId = data.userId;
+    }
     
     // Conection Polling
     function sendThroughPolling(data) {
@@ -230,6 +238,8 @@
         userId: userId,
         messageId: messageId,
       };
+
+      window.localStorage.setItem('data', JSON.stringify(data));
 
       sendThroughPolling(data);
     });
